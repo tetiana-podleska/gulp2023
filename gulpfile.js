@@ -1,18 +1,19 @@
-const { src, dest, watch, parallel } = require("gulp");
+const { src, dest, watch, parallel, series } = require("gulp");
 
 const scss = require("gulp-sass")(require("sass"));
 const concat = require("gulp-concat");
 const uglify = require("gulp-uglify-es").default;
 const browserSync = require("browser-sync").create();
 const autoprefixer = require("gulp-autoprefixer");
+const clean = require("gulp-clean");
 
 function scripts() {
   return src([
-    "node_modules/swiper/swiper-bundle.js",
+    // "node_modules/swiper/swiper-bundle.js",
     "app/js/main.js",
 
     // 'app/js/*.js',
-    // '!app/js/main.min.js'
+    // '!app/js/main.min.js' to exclude files
   ])
     .pipe(concat("main.min.js"))
     .pipe(uglify())
@@ -43,9 +44,21 @@ function browsersync() {
   });
 }
 
+function cleanDist() {
+  return src("dist").pipe(clean());
+}
+
+function buiding() {
+  return src(["app/css/style.min.css", "app/js/main.min.js", "app/**/*.html"], {
+    base: "app",
+  }).pipe(dest("dist"));
+}
+
 exports.styles = styles;
 exports.scripts = scripts;
 exports.watcher = watcher;
 exports.browsersync = browsersync;
+
+exports.build = series(cleanDist, buiding);
 
 exports.default = parallel(styles, scripts, browsersync, watcher);
